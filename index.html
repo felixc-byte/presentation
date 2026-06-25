@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>品牌 0→1｜Felix Chen @ 大甲中央扶輪社</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* Hide all scrollbars */
+  ::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+
+  :root {
+    --orange: #FF6600;
+    --orange-dim: rgba(255,102,0,0.15);
+    --orange-mid: rgba(255,102,0,0.4);
+    --black: #000000;
+    --white: #FFFFFF;
+    --gray-1: #111111;
+    --gray-2: #1a1a1a;
+    --gray-3: #2a2a2a;
+    --text-dim: rgba(255,255,255,0.55);
+    --text-mid: rgba(255,255,255,0.8);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Noto Sans TC', sans-serif;
+    overflow: hidden;
+    cursor: none;
+    margin: 0; padding: 0;
+    max-width: 100vw; max-height: 100vh;
+  }
+  html { overflow: hidden !important; }
+  body { overflow: hidden !important; }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed; width: 10px; height: 10px;
+    background: var(--orange); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: transform 0.1s, opacity 0.2s;
+  }
+
+  /* Slide container */
+  #slides {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 6vw 8vw;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s ease;
+    will-change: opacity;
+    overflow: hidden;
+  }
+  .slide.active { opacity: 1; pointer-events: all; }
+
+  /* Stage line — signature element */
+  .slide::before {
+    content: '';
+    position: absolute; bottom: 0; left: 0;
+    width: 0; height: 0;
+    background: var(--orange);
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1) 0.3s,
+                height 0s 0s;
+  }
+  .slide.active::before {
+    width: 100%; height: 3px;
+  }
+
+  /* ── Typography ── */
+  .eyebrow {
+    font-size: clamp(11px, 1.1vw, 14px);
+    font-weight: 500; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--orange);
+    margin-bottom: 1.2rem;
+  }
+  .slide-number {
+    font-size: 11px; letter-spacing: 0.15em;
+    color: var(--text-dim); font-weight: 400;
+    margin-bottom: 0.5rem;
+  }
+  h1 {
+    font-size: clamp(52px, 7.5vw, 108px);
+    font-weight: 900; line-height: 1.0;
+    letter-spacing: -0.02em; color: var(--white);
+    margin-bottom: 1rem;
+  }
+  h1 em { color: var(--orange); font-style: normal; }
+  h2 {
+    font-size: clamp(36px, 4.8vw, 72px);
+    font-weight: 700; line-height: 1.1;
+    letter-spacing: -0.015em; color: var(--white);
+    margin-bottom: 1.2rem;
+  }
+  h2 em { color: var(--orange); font-style: normal; }
+  h3 {
+    font-size: clamp(22px, 2.8vw, 42px);
+    font-weight: 500; line-height: 1.3;
+    color: var(--text-mid); margin-bottom: 2rem;
+  }
+  .body-text {
+    font-size: clamp(16px, 1.8vw, 26px);
+    font-weight: 300; line-height: 1.7;
+    color: var(--text-mid); max-width: 70vw;
+  }
+  .body-text strong { color: var(--white); font-weight: 500; }
+  .quote {
+    font-size: clamp(20px, 2.4vw, 36px);
+    font-weight: 400; line-height: 1.5;
+    color: var(--white); border-left: 3px solid var(--orange);
+    padding-left: 1.5rem; margin-top: 2rem; max-width: 65vw;
+  }
+  .time-badge {
+    position: absolute; top: 3.5vh; right: 4vw;
+    font-size: 12px; color: var(--text-dim);
+    letter-spacing: 0.1em; display: flex; align-items: center; gap: 6px;
+  }
+  .time-badge span {
+    background: var(--gray-2); border: 1px solid var(--gray-3);
+    padding: 4px 12px; border-radius: 20px;
+  }
+
+  /* ── Navigation ── */
+  #nav {
+    position: fixed; bottom: 4vh; right: 4vw;
+    display: flex; align-items: center; gap: 16px;
+    z-index: 100;
+  }
+  .nav-btn {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 1px solid var(--gray-3); background: var(--gray-1);
+    color: var(--white); font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-btn:hover { background: var(--orange); border-color: var(--orange); }
+  #progress {
+    font-size: 12px; color: var(--text-dim); letter-spacing: 0.1em;
+    min-width: 50px; text-align: center;
+  }
+
+  /* Progress bar */
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    width: 0;
+    background: var(--orange);
+    transition: width 0.4s ease; z-index: 200;
+  }
+
+  /* ── Specific Slide Layouts ── */
+
+  /* Cover */
+  .slide-cover { justify-content: center; }
+  .cover-brand {
+    font-size: clamp(11px, 1.2vw, 15px);
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 3rem;
+    font-weight: 300;
+  }
+  .cover-arrow {
+    display: inline-block;
+    font-size: clamp(48px, 6vw, 90px);
+    font-weight: 900; color: var(--orange);
+    margin: 0 0.2em;
+  }
+  .cover-subtitle {
+    font-size: clamp(18px, 2vw, 28px);
+    color: var(--text-dim); font-weight: 300;
+    margin-top: 1.5rem; letter-spacing: 0.05em;
+  }
+  .cover-meta {
+    position: absolute; bottom: 6vh; left: 8vw;
+    font-size: 12px; color: var(--text-dim);
+    letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .cover-meta strong { color: var(--orange); }
+
+  /* Two columns */
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 5vw; width: 100%; max-width: 85vw;
+    margin-top: 2rem;
+  }
+  .col-item {
+    border-top: 1px solid var(--gray-3);
+    padding-top: 1.5rem;
+  }
+  .col-item .col-label {
+    font-size: clamp(11px, 1vw, 13px);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--orange); font-weight: 500; margin-bottom: 0.8rem;
+  }
+  .col-item .col-title {
+    font-size: clamp(20px, 2.2vw, 32px);
+    font-weight: 700; color: var(--white); margin-bottom: 0.6rem;
+    line-height: 1.2;
+  }
+  .col-item .col-body {
+    font-size: clamp(14px, 1.4vw, 20px);
+    color: var(--text-dim); line-height: 1.6; font-weight: 300;
+  }
+
+  /* Tag list */
+  .tag-list { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 2rem; }
+  .tag {
+    font-size: clamp(14px, 1.4vw, 20px);
+    padding: 0.5em 1.2em; border-radius: 100px;
+    border: 1px solid var(--gray-3); color: var(--text-dim);
+    font-weight: 300; letter-spacing: 0.03em;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    cursor: default;
+  }
+  .tag.highlighted, .tag:hover {
+    border-color: var(--orange); color: var(--white);
+    background: var(--orange-dim);
+  }
+
+  /* Interactive choices */
+  .choice-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 16px; margin-top: 2.5rem; max-width: 70vw;
+  }
+  .choice-btn {
+    padding: 1.2em 1.8em; border-radius: 8px;
+    border: 1px solid var(--gray-3); background: var(--gray-1);
+    color: var(--text-mid); font-family: inherit;
+    font-size: clamp(15px, 1.5vw, 22px); font-weight: 400;
+    cursor: pointer; text-align: left; line-height: 1.4;
+    transition: all 0.25s;
+  }
+  .choice-btn:hover { border-color: var(--orange-mid); background: var(--orange-dim); color: var(--white); }
+  .choice-btn.selected { border-color: var(--orange); background: var(--orange-dim); color: var(--white); }
+  .choice-btn.answer-reveal {
+    border-color: var(--orange); background: var(--orange);
+    color: var(--white); font-weight: 700;
+  }
+  .reveal-text {
+    margin-top: 2rem; opacity: 0;
+    transition: opacity 0.5s 0.2s;
+    font-size: clamp(16px, 1.8vw, 26px);
+    color: var(--white); font-weight: 400; line-height: 1.5;
+    border-left: 3px solid var(--orange); padding-left: 1.5rem;
+    max-width: 65vw;
+  }
+  .reveal-text.visible { opacity: 1; }
+
+  /* Stacked items (brand equity) */
+  .stack {
+    display: flex; flex-direction: column; gap: 0;
+    margin-top: 2rem;
+  }
+  .stack-item {
+    display: flex; align-items: center; gap: 2rem;
+    padding: 1rem 1.5rem;
+    border-left: 2px solid var(--gray-3);
+    opacity: 0; transform: translateX(-20px);
+    transition: all 0.4s ease;
+    cursor: pointer;
+    position: relative;
+  }
+  .stack-item.visible {
+    opacity: 1; transform: translateX(0);
+    border-left-color: var(--orange);
+  }
+  .stack-num {
+    font-size: clamp(20px, 2vw, 28px);
+    font-weight: 900; color: var(--orange); min-width: 2em;
+    text-align: right;
+  }
+  .stack-name {
+    font-size: clamp(18px, 2vw, 28px);
+    font-weight: 700; color: var(--white); min-width: 8em;
+  }
+  .stack-sub {
+    font-size: clamp(13px, 1.3vw, 18px);
+    color: var(--text-dim); font-weight: 300;
+  }
+
+  /* Concentric circles */
+  .circle-viz {
+    position: absolute; right: 6vw; top: 50%; transform: translateY(-50%);
+    width: min(35vw, 400px); height: min(35vw, 400px);
+  }
+  .ring {
+    position: absolute; border-radius: 50%; border: 1px solid;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .ring-1 { width: 100%; height: 100%; border-color: rgba(255,102,0,0.2); background: rgba(255,102,0,0.03); }
+  .ring-2 { width: 68%; height: 68%; border-color: rgba(255,102,0,0.35); background: rgba(255,102,0,0.06); }
+  .ring-3 { width: 38%; height: 38%; border-color: var(--orange); background: rgba(255,102,0,0.15); }
+  .ring-label {
+    position: absolute; font-size: clamp(9px, 0.85vw, 12px);
+    color: var(--text-dim); letter-spacing: 0.1em;
+    text-transform: uppercase; font-weight: 500;
+  }
+  .ring-3 .ring-label { color: var(--white); font-weight: 700; font-size: clamp(10px, 0.9vw, 13px); }
+
+  /* Collab 3 benefits */
+  .benefit-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 2vw; margin-top: 2.5rem; max-width: 85vw;
+  }
+  .benefit-card {
+    padding: 2rem 1.8rem; background: var(--gray-1);
+    border: 1px solid var(--gray-3); border-radius: 4px;
+    opacity: 0; transform: translateY(16px);
+    transition: opacity 0.4s, transform 0.4s, border-color 0.2s;
+    cursor: default;
+  }
+  .benefit-card.visible { opacity: 1; transform: translateY(0); }
+  .benefit-card:hover { border-color: var(--orange); }
+  .benefit-card .b-num {
+    font-size: clamp(28px, 3vw, 46px); font-weight: 900;
+    color: var(--orange); line-height: 1; margin-bottom: 0.5rem;
+  }
+  .benefit-card .b-title {
+    font-size: clamp(16px, 1.6vw, 22px); font-weight: 700;
+    color: var(--white); margin-bottom: 0.6rem;
+  }
+  .benefit-card .b-body {
+    font-size: clamp(13px, 1.2vw, 17px);
+    color: var(--text-dim); line-height: 1.6; font-weight: 300;
+  }
+
+  /* Story 3 layers */
+  .story-layers {
+    display: flex; gap: 2vw; margin-top: 2.5rem; max-width: 82vw;
+  }
+  .story-card {
+    flex: 1; padding: 2rem 1.5rem;
+    background: var(--gray-1); border: 1px solid var(--gray-3);
+    border-radius: 4px; position: relative; overflow: hidden;
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.4s, transform 0.4s, border-color 0.25s;
+    cursor: default;
+  }
+  .story-card.visible { opacity: 1; transform: translateY(0); }
+  .story-card:hover { border-color: var(--orange); }
+  .story-card::before {
+    content: ''; position: absolute; bottom: 0; left: 0;
+    width: 100%; height: 2px; background: var(--orange);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .story-card:hover::before { transform: scaleX(1); }
+  .s-layer {
+    font-size: 11px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--orange);
+    font-weight: 500; margin-bottom: 0.8rem;
+  }
+  .s-title {
+    font-size: clamp(18px, 1.8vw, 26px);
+    font-weight: 700; color: var(--white); margin-bottom: 0.8rem;
+  }
+  .s-body {
+    font-size: clamp(13px, 1.2vw, 17px);
+    color: var(--text-dim); line-height: 1.6; font-weight: 300;
+  }
+
+  /* Trend items */
+  .trend-list { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem; max-width: 75vw; }
+  .trend-item { display: flex; align-items: flex-start; gap: 1.5rem; }
+  .trend-num {
+    font-size: clamp(28px, 3vw, 46px); font-weight: 900;
+    color: var(--orange); line-height: 1; min-width: 1.6em;
+  }
+  .trend-content .t-title {
+    font-size: clamp(18px, 1.8vw, 26px); font-weight: 700;
+    color: var(--white); margin-bottom: 0.4rem;
+  }
+  .trend-content .t-body {
+    font-size: clamp(13px, 1.3vw, 18px);
+    color: var(--text-dim); line-height: 1.6; font-weight: 300;
+  }
+  .trend-content .t-body strong { color: var(--white); font-weight: 500; }
+
+  /* Closing */
+  .closing-list {
+    display: flex; flex-direction: column; gap: 1rem;
+    margin-top: 2rem;
+  }
+  .closing-q {
+    font-size: clamp(18px, 2vw, 30px);
+    font-weight: 400; color: var(--text-mid);
+    padding-left: 1.5rem;
+    border-left: 1px solid var(--gray-3);
+    line-height: 1.4;
+    transition: color 0.2s, border-color 0.2s;
+    cursor: default;
+  }
+  .closing-q:hover { color: var(--white); border-left-color: var(--orange); }
+
+  /* Keyboard hint */
+  #hint {
+    position: fixed; bottom: 4vh; left: 50%; transform: translateX(-50%);
+    font-size: 11px; color: var(--text-dim); letter-spacing: 0.12em;
+    pointer-events: none; opacity: 1;
+    transition: opacity 0.5s;
+  }
+  #hint.hidden { opacity: 0; }
+
+  /* Section divider slide */
+  .slide-section { background: var(--black); }
+  .section-num {
+    font-size: clamp(80px, 12vw, 180px); font-weight: 900;
+    color: var(--orange-dim); line-height: 1;
+    position: absolute; right: 6vw; bottom: 6vh;
+    letter-spacing: -0.05em;
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div id="progress-bar"></div>
+
+<div id="slides">
+
+  <!-- SLIDE 1 — Cover -->
+  <div class="slide slide-cover active" data-time="">
+    <div class="cover-brand">The Gluck Lab International</div>
+    <h1>品牌<em class="cover-arrow">0→1</em></h1>
+    <div class="cover-subtitle">品牌不是設計，而是一連串的體驗</div>
+    <div class="cover-meta">
+      大甲中央扶輪社專題演講 ｜ 2026.08.11 ｜ <strong>Felix Chen</strong>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — 今天的定位 -->
+  <div class="slide" data-time="Part 1 · 5 min">
+    <div class="eyebrow">Opening</div>
+    <h2>我不是來<em>教</em>大家做品牌</h2>
+    <h3>而是帶著一個創業者的問題，邀請大家一起交流</h3>
+    <div class="body-text">
+      各位都是<strong>成功的企業家與管理者</strong>。<br><br>
+      我則是一個正在摸索品牌 0→1 的創業者——<br>
+      在錯誤與嘗試中，累積了一些真實的問題。<br><br>
+      今天希望借助大家在高位的視角與經驗，<strong>一起思考這些問題</strong>。
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — Der ZÖMAR 品牌介紹 -->
+  <div class="slide" data-time="Part 1 · 5 min">
+    <div class="eyebrow">Stage Ritual · Performance Culture · Everyday Luxury</div>
+    <h2><em>Der ZÖMAR</em></h2>
+    <h3 style="margin-bottom: 1.8rem; max-width: 60vw;">誕生自舞台世界的專業淬鍊，<br>將幕前幕後的每個時刻轉化為日常的生活美學。</h3>
+    <div class="body-text" style="max-width: 58vw; font-size: clamp(15px,1.55vw,22px);">
+      Der ZÖMAR 存在於<strong>表演文化與精緻日常生活的交匯處</strong>。<br>
+      品牌建立在一個信念之上：<br>
+      <strong>存在感不是與生俱來的，而是準備出來的。</strong><br><br>
+      為聚光燈下即將登場的你，打造屬於自己的準備。
+    </div>
+    <!-- Three collection arc -->
+    <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 0; margin-top: 2.8rem; max-width: 78vw; border-top: 1px solid var(--gray-3);">
+      <div style="padding: 1.2rem 1.6rem 1.2rem 0; border-top: 2px solid var(--orange); margin-top: -1px;">
+        <div style="font-size:clamp(10px,0.85vw,12px); letter-spacing:0.2em; text-transform:uppercase; color:var(--orange); font-weight:500; margin-bottom:0.5rem;">Before · Centre Stage</div>
+        <div style="font-size:clamp(15px,1.5vw,21px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">登場前的準備</div>
+        <div style="font-size:clamp(12px,1.05vw,15px); color:var(--text-dim); line-height:1.6; font-weight:300;">讓肌膚做好登場準備<br>Precision Skincare</div>
+      </div>
+      <div style="padding: 1.2rem 1.6rem; border-top: 2px solid var(--orange); margin-top: -1px; border-left: 1px solid var(--gray-3);">
+        <div style="font-size:clamp(10px,0.85vw,12px); letter-spacing:0.2em; text-transform:uppercase; color:var(--orange); font-weight:500; margin-bottom:0.5rem;">Between · Nomadland</div>
+        <div style="font-size:clamp(15px,1.5vw,21px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">舞台間的恢復</div>
+        <div style="font-size:clamp(12px,1.05vw,15px); color:var(--text-dim); line-height:1.6; font-weight:300;">流動之間，重新出發<br>Body Care</div>
+      </div>
+      <div style="padding: 1.2rem 1.6rem; border-top: 2px solid var(--orange); margin-top: -1px; border-left: 1px solid var(--gray-3);">
+        <div style="font-size:clamp(10px,0.85vw,12px); letter-spacing:0.2em; text-transform:uppercase; color:var(--orange); font-weight:500; margin-bottom:0.5rem;">After · Aroma Stage</div>
+        <div style="font-size:clamp(15px,1.5vw,21px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">謝幕後的印象</div>
+        <div style="font-size:clamp(12px,1.05vw,15px); color:var(--text-dim); line-height:1.6; font-weight:300;">餘韻才是真正的登場<br>Fragrance</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3C — 合作夥伴 -->
+  <div class="slide" data-time="Part 1 · 5 min">
+    <div class="eyebrow">Brand in Action · 合作夥伴</div>
+    <h2>我們正在建立的<em>品牌足跡</em></h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2vw; margin-top: 2rem; max-width: 88vw;" id="partner-grid">
+
+      <div class="partner-card" style="background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 4px; padding: 1.2rem 1.4rem;">
+        <div style="font-size:clamp(10px,0.9vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); margin-bottom:0.5rem; font-weight:500;">電影 × 典禮</div>
+        <div style="font-size:clamp(15px,1.5vw,22px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">金馬獎</div>
+        <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5; font-weight:300;">金馬 61、62 連續兩年聯名合作<br>後台指定髮品禮盒</div>
+      </div>
+
+      <div class="partner-card" style="background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 4px; padding: 1.2rem 1.4rem;">
+        <div style="font-size:clamp(10px,0.9vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); margin-bottom:0.5rem; font-weight:500;">國際連鎖酒店</div>
+        <div style="font-size:clamp(15px,1.5vw,22px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">日勝生加賀屋</div>
+        <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5; font-weight:300;">夏祭限定住房專案<br>香氛饗宴禮盒聯名</div>
+      </div>
+
+      <div class="partner-card" style="background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 4px; padding: 1.2rem 1.4rem;">
+        <div style="font-size:clamp(10px,0.9vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); margin-bottom:0.5rem; font-weight:500;">國際連鎖酒店</div>
+        <div style="font-size:clamp(15px,1.5vw,22px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">宜蘭力麗威斯汀</div>
+        <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5; font-weight:300;">入住贈品聯名<br>火掌植萃保濕面膜</div>
+      </div>
+
+      <div class="partner-card" style="background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 4px; padding: 1.2rem 1.4rem;">
+        <div style="font-size:clamp(10px,0.9vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); margin-bottom:0.5rem; font-weight:500;">精品旅宿</div>
+        <div style="font-size:clamp(15px,1.5vw,22px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">寒居酒店</div>
+        <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5; font-weight:300;">雙人聯名下午茶<br>冬境漫香住房專案</div>
+      </div>
+
+      <div class="partner-card" style="background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 4px; padding: 1.2rem 1.4rem;">
+        <div style="font-size:clamp(10px,0.9vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); margin-bottom:0.5rem; font-weight:500;">精品旅宿</div>
+        <div style="font-size:clamp(15px,1.5vw,22px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">高雄洲際酒店</div>
+        <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5; font-weight:300;">限定香影山海下午茶<br>雙香調酒聯名套餐</div>
+      </div>
+
+      <div class="partner-card" style="background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 4px; padding: 1.2rem 1.4rem;">
+        <div style="font-size:clamp(10px,0.9vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); margin-bottom:0.5rem; font-weight:500;">當代藝術</div>
+        <div style="font-size:clamp(15px,1.5vw,22px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">金馬賓館當代美術館</div>
+        <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5; font-weight:300;">Crossing A Time<br>午茶香氣體驗計畫</div>
+      </div>
+
+      <div class="partner-card" style="background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 4px; padding: 1.2rem 1.4rem;">
+        <div style="font-size:clamp(10px,0.9vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); margin-bottom:0.5rem; font-weight:500;">表演藝術</div>
+        <div style="font-size:clamp(15px,1.5vw,22px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">B. DANCE 舞團</div>
+        <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5; font-weight:300;">國際巡演聯名<br>多感官藝術體驗</div>
+      </div>
+
+      <div class="partner-card" style="background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 4px; padding: 1.2rem 1.4rem;">
+        <div style="font-size:clamp(10px,0.9vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); margin-bottom:0.5rem; font-weight:500;">精品旅宿</div>
+        <div style="font-size:clamp(15px,1.5vw,22px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">歸璞泊旅・迷路小章魚・耳東華苑</div>
+        <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5; font-weight:300;">日月潭／墾丁風格旅宿<br>五感洗沐體驗聯名</div>
+      </div>
+
+      <div class="partner-card" style="background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 4px; padding: 1.2rem 1.4rem;">
+        <div style="font-size:clamp(10px,0.9vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); margin-bottom:0.5rem; font-weight:500;">插畫 IP × 健康生活</div>
+        <div style="font-size:clamp(15px,1.5vw,22px); font-weight:700; color:var(--white); margin-bottom:0.4rem;">胡子碰碰 × SPACE</div>
+        <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5; font-weight:300;">插畫聯名保濕面膜<br>飛輪瑜珈感官體驗課</div>
+      </div>
+
+    </div>
+    <div style="position:absolute; bottom: 5.5vh; left: 8vw; font-size: clamp(11px,1vw,14px); color: var(--text-dim);">
+      現設有高雄流行音樂中心 FOCUS 13 珊瑚廣場實體據點 &nbsp;·&nbsp; 持續擴展中
+    </div>
+  </div>
+
+  <!-- SLIDE 3B — ZtyleNow / ZtylePro 雙平台定位 -->
+  <div class="slide" data-time="Part 1 · 5 min">
+    <div class="eyebrow">Beauty Tech · 作品驅動的服務平台</div>
+    <h2><em>ZtyleNow</em> &amp; <em>ZtylePro</em></h2>
+    <h3 style="margin-bottom: 2rem;">以作品驅動預約，讓靈感立即轉化為服務</h3>
+
+    <!-- Two platform columns -->
+    <div style="display: grid; grid-template-columns: 1fr 2px 1fr; gap: 3vw; max-width: 84vw; margin-top: 0.5rem;">
+
+      <!-- Left: ZtyleNow -->
+      <div>
+        <div style="font-size:clamp(10px,0.9vw,13px); letter-spacing:0.2em; text-transform:uppercase; color:#7C6FFF; font-weight:600; margin-bottom:0.8rem;">ZtyleNow · 消費者 App</div>
+        <div style="font-size:clamp(18px,1.9vw,28px); font-weight:700; color:var(--white); margin-bottom:1.2rem;">看作品 → 喜歡 → 直接預約</div>
+        <div style="display:flex; flex-direction:column; gap:0.8rem;">
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <div style="min-width:28px; height:28px; border-radius:50%; background:rgba(124,111,255,0.2); border:1px solid rgba(124,111,255,0.5); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#7C6FFF; flex-shrink:0;">1</div>
+            <div style="font-size:clamp(13px,1.2vw,17px); color:var(--text-mid); line-height:1.5;"><strong style="color:var(--white);">探索作品</strong>——瀏覽風格靈感，視覺驅動發現</div>
+          </div>
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <div style="min-width:28px; height:28px; border-radius:50%; background:rgba(124,111,255,0.2); border:1px solid rgba(124,111,255,0.5); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#7C6FFF; flex-shrink:0;">2</div>
+            <div style="font-size:clamp(13px,1.2vw,17px); color:var(--text-mid); line-height:1.5;"><strong style="color:var(--white);">喜歡收藏</strong>——按讚、收藏、分享給朋友</div>
+          </div>
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <div style="min-width:28px; height:28px; border-radius:50%; background:rgba(124,111,255,0.2); border:1px solid rgba(124,111,255,0.5); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#7C6FFF; flex-shrink:0;">3</div>
+            <div style="font-size:clamp(13px,1.2vw,17px); color:var(--text-mid); line-height:1.5;"><strong style="color:var(--white);">一步預約</strong>——從靈感到完成預約，一站搞定</div>
+          </div>
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <div style="min-width:28px; height:28px; border-radius:50%; background:rgba(124,111,255,0.2); border:1px solid rgba(124,111,255,0.5); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#7C6FFF; flex-shrink:0;">4</div>
+            <div style="font-size:clamp(13px,1.2vw,17px); color:var(--text-mid); line-height:1.5;"><strong style="color:var(--white);">AI 精準推薦</strong>——演算法匹配風格與服務</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div style="background: var(--gray-3); border-radius:2px;"></div>
+
+      <!-- Right: ZtylePro -->
+      <div>
+        <div style="font-size:clamp(10px,0.9vw,13px); letter-spacing:0.2em; text-transform:uppercase; color:var(--orange); font-weight:600; margin-bottom:0.8rem;">ZtylePro · 服務提供者 App</div>
+        <div style="font-size:clamp(18px,1.9vw,28px); font-weight:700; color:var(--white); margin-bottom:1.2rem;">上傳作品 → 獲得曝光 → 接收預約</div>
+        <div style="display:flex; flex-direction:column; gap:0.8rem;">
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <div style="min-width:28px; height:28px; border-radius:50%; background:var(--orange-dim); border:1px solid var(--orange-mid); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--orange); flex-shrink:0;">1</div>
+            <div style="font-size:clamp(13px,1.2vw,17px); color:var(--text-mid); line-height:1.5;"><strong style="color:var(--white);">作品即入口</strong>——每件作品都是可被預約的服務</div>
+          </div>
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <div style="min-width:28px; height:28px; border-radius:50%; background:var(--orange-dim); border:1px solid var(--orange-mid); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--orange); flex-shrink:0;">2</div>
+            <div style="font-size:clamp(13px,1.2vw,17px); color:var(--text-mid); line-height:1.5;"><strong style="color:var(--white);">AI 助理全面賦能</strong>——作品優化、行事曆、數據洞察</div>
+          </div>
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <div style="min-width:28px; height:28px; border-radius:50%; background:var(--orange-dim); border:1px solid var(--orange-mid); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--orange); flex-shrink:0;">3</div>
+            <div style="font-size:clamp(13px,1.2vw,17px); color:var(--text-mid); line-height:1.5;"><strong style="color:var(--white);">訂閱成長</strong>——Free / Pro / Pro+ 三級方案</div>
+          </div>
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <div style="min-width:28px; height:28px; border-radius:50%; background:var(--orange-dim); border:1px solid var(--orange-mid); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--orange); flex-shrink:0;">4</div>
+            <div style="font-size:clamp(13px,1.2vw,17px); color:var(--text-mid); line-height:1.5;"><strong style="color:var(--white);">供給帶流量</strong>——Provider 自帶社群，反向導流平台</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Market -->
+    <div style="position:absolute; bottom:5.5vh; left:8vw; right:8vw; display:flex; gap:3vw; align-items:center;">
+      <div style="font-size:clamp(11px,1vw,14px); color:var(--text-dim);">台灣美業市場規模</div>
+      <div style="font-size:clamp(14px,1.3vw,19px); font-weight:700; color:var(--white);">突破 1,000 億元+</div>
+      <div style="width:1px; height:20px; background:var(--gray-3);"></div>
+      <div style="font-size:clamp(11px,1vw,14px); color:var(--text-dim);">供給端</div>
+      <div style="font-size:clamp(14px,1.3vw,19px); font-weight:700; color:var(--white);">約 3.5 萬家店家</div>
+      <div style="width:1px; height:20px; background:var(--gray-3);"></div>
+      <div style="font-size:clamp(11px,1vw,14px); color:var(--text-dim);">核心痛點</div>
+      <div style="font-size:clamp(14px,1.3vw,19px); font-weight:700; color:var(--white);">靈感與交易之間，存在巨大斷層</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3D — 軟硬體共生生態系 -->
+  <div class="slide" data-time="Part 1 · 5 min">
+    <div class="eyebrow">Ecosystem · 軟體 × 硬體共生模型</div>
+    <h2>看似兩個品牌，<br>實則一個<em>生態系</em></h2>
+    <h3 style="margin-bottom: 2rem;">ZtyleNow / ZtylePro × Der ZÖMAR — 共生的商業邏輯</h3>
+
+    <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 2vw; max-width: 88vw;">
+
+      <!-- Card 1: Data → Product -->
+      <div style="background:var(--gray-1); border:1px solid var(--gray-3); border-radius:4px; padding:1.6rem 1.6rem; border-top: 2px solid #7C6FFF;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+          <div style="font-size:clamp(22px,2.2vw,34px); font-weight:900; color:#7C6FFF; line-height:1;">①</div>
+          <div>
+            <div style="font-size:clamp(10px,0.85vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:#7C6FFF; font-weight:600;">數據 → 產品</div>
+            <div style="font-size:clamp(16px,1.6vw,23px); font-weight:700; color:var(--white); line-height:1.2;">平台數據驅動<br>產品開發</div>
+          </div>
+        </div>
+        <div style="font-size:clamp(12px,1.15vw,17px); color:var(--text-dim); line-height:1.7; font-weight:300;">
+          平台累積的<strong style="color:var(--white);">匿名使用者統計數據</strong>——膚質、髮質、消費偏好——成為 Der ZÖMAR 產品開發的市場依據。<br><br>
+          每一個新品都有數據支撐，而非憑感覺研發。
+        </div>
+      </div>
+
+      <!-- Card 2: Channel → Distribution -->
+      <div style="background:var(--gray-1); border:1px solid var(--gray-3); border-radius:4px; padding:1.6rem 1.6rem; border-top: 2px solid var(--orange);">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+          <div style="font-size:clamp(22px,2.2vw,34px); font-weight:900; color:var(--orange); line-height:1;">②</div>
+          <div>
+            <div style="font-size:clamp(10px,0.85vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); font-weight:600;">渠道 → 推廣</div>
+            <div style="font-size:clamp(16px,1.6vw,23px); font-weight:700; color:var(--white); line-height:1.2;">服務者網絡<br>自然流通</div>
+          </div>
+        </div>
+        <div style="font-size:clamp(12px,1.15vw,17px); color:var(--text-dim); line-height:1.7; font-weight:300;">
+          髮品、沐浴品透過 <strong style="color:var(--white);">ZtylePro 的服務提供者網絡</strong>自然流通。<br><br>
+          造型師、美容師成為最可信的產品推薦者——比任何廣告都更有說服力。
+        </div>
+      </div>
+
+      <!-- Card 3: Spillover → Insight -->
+      <div style="background:var(--gray-1); border:1px solid var(--gray-3); border-radius:4px; padding:1.6rem 1.6rem; border-top: 2px solid #4CAF82;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+          <div style="font-size:clamp(22px,2.2vw,34px); font-weight:900; color:#4CAF82; line-height:1;">③</div>
+          <div>
+            <div style="font-size:clamp(10px,0.85vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:#4CAF82; font-weight:600;">流量 → 洞察</div>
+            <div style="font-size:clamp(16px,1.6vw,23px); font-weight:700; color:var(--white); line-height:1.2;">外溢效益<br>自驅動循環</div>
+          </div>
+        </div>
+        <div style="font-size:clamp(12px,1.15vw,17px); color:var(--text-dim); line-height:1.7; font-weight:300;">
+          網紅、媒體在平台分享作品並<strong style="color:var(--white);">標注設計師</strong>，帶動自然流量。<br><br>
+          流量產生數據，數據反饋市場趨勢——形成不需要大量廣告預算的自驅動循環。
+        </div>
+      </div>
+
+    </div>
+
+    <div class="quote" style="margin-top: 2rem;">
+      邊際效益不是附加價值，<strong>而是這個生態系設計的一部分。</strong>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — 互動：品牌是什麼？ -->
+  <div class="slide" data-time="Part 2 · 5 min">
+    <div class="eyebrow">互動討論</div>
+    <h2>請問各位，<br><em>品牌</em>是什麼？</h2>
+    <div class="choice-grid" id="brand-choices">
+      <button class="choice-btn" onclick="pickBrand(this, false)">A. Logo 與視覺設計</button>
+      <button class="choice-btn" onclick="pickBrand(this, false)">B. 包裝與產品形象</button>
+      <button class="choice-btn" onclick="pickBrand(this, false)">C. 廣告與行銷曝光</button>
+      <button class="choice-btn" onclick="pickBrand(this, true)">D. 顧客心中的印象</button>
+    </div>
+    <div class="reveal-text" id="brand-reveal">
+      品牌不是你說自己是誰，<strong>而是市場認為你是誰。</strong><br>
+      Logo、包裝、廣告——這些是品牌的語言，不是品牌本身。
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — 品牌是成本還是資產？ -->
+  <div class="slide" data-time="Part 3 · 6 min">
+    <div class="eyebrow">互動討論</div>
+    <h2>做品牌，是在<em>花錢</em>，<br>還是在<em>投資</em>？</h2>
+    <div class="tag-list" id="brand-asset-tags" style="margin-top: 2.5rem;">
+      <div class="tag">認知</div>
+      <div class="tag">信任</div>
+      <div class="tag">口碑</div>
+      <div class="tag">體驗</div>
+      <div class="tag">推薦</div>
+      <div class="tag">溢價能力</div>
+      <div class="tag">合作機會</div>
+      <div class="tag">人才吸引力</div>
+    </div>
+    <div class="quote" style="margin-top: 2.5rem;">
+      品牌短期看起來像成本，<br>
+      <strong>長期才會變成資產。</strong>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 — Section Break：客群 -->
+  <div class="slide slide-section" data-time="品牌客群">
+    <div class="eyebrow">Brand Audience</div>
+    <h2>品牌客群：<br><em>先聚焦，再擴散</em></h2>
+    <h3>品牌 0→1 的第一步不是設計，而是選擇</h3>
+    <div class="section-num">04</div>
+  </div>
+
+  <!-- SLIDE 8 — 互動：咖啡 -->
+  <div class="slide" data-time="Part 4 · 8 min">
+    <div class="eyebrow">互動：思考練習</div>
+    <h2>同樣是一杯咖啡，<br>為什麼有人賣 <em>35 元</em>，有人賣 <em>280 元</em>？</h2>
+    <div style="display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-top: 2rem; max-width: 88vw;" id="coffee-choices">
+      <button class="choice-btn" onclick="pickCoffee(this, '早餐店 35 元 → 客群：附近上班族、學生。品牌語言：方便、快速、習慣。買的是「每天的日常」。')">☕ 早餐店<br><span style="font-size:0.85em; color:var(--orange);">35 元</span></button>
+      <button class="choice-btn" onclick="pickCoffee(this, 'City Café 55 元 → 客群：便利性消費者。品牌語言：隨手可得、品質穩定、現代感。買的是「有點品質的便利」。')">🏪 City Café<br><span style="font-size:0.85em; color:var(--orange);">55 元</span></button>
+      <button class="choice-btn" onclick="pickCoffee(this, '星巴克 160 元 → 客群：都市白領、社交型消費者。品牌語言：第三空間、身份感、打卡文化。買的是「一個屬於自己的空間與儀式」。')">⭐ 星巴克<br><span style="font-size:0.85em; color:var(--orange);">160 元</span></button>
+      <button class="choice-btn" onclick="pickCoffee(this, 'Blue Bottle 280 元 → 客群：咖啡愛好者、品味型消費者。品牌語言：職人精神、產地溯源、極簡美學。買的是「對咖啡本質的尊重與品味認同」。')">🫙 Blue Bottle<br><span style="font-size:0.85em; color:var(--orange);">280 元</span></button>
+    </div>
+    <div class="reveal-text" id="coffee-reveal"></div>
+    <div style="margin-top: 1.5rem; font-size:clamp(13px,1.2vw,17px); color:var(--text-dim); line-height:1.6;">
+      咖啡豆的成本差距遠小於售價差距。<strong style="color:var(--white);">真正拉開價格的，是品牌定位與客群選擇。</strong>
+    </div>
+  </div>
+
+  <!-- SLIDE 9 — 核心客群擴散 + 案例 -->
+  <div class="slide" data-time="Part 4 · 8 min">
+    <div class="eyebrow">核心客群策略 · 品牌案例</div>
+    <h2>先贏得<em>專業者的信任</em>，<br>再向外圍<em>自然擴散</em></h2>
+
+    <!-- Three case cards -->
+    <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 1.6vw; margin-top: 2rem; max-width: 90vw;">
+
+      <!-- Case 1: Apple -->
+      <div style="background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 4px; overflow: hidden;">
+        <div style="background: rgba(255,255,255,0.04); padding: 1rem 1.4rem; border-bottom: 1px solid var(--gray-3);">
+          <div style="font-size:clamp(10px,0.85vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); font-weight:600; margin-bottom:0.3rem;">Case 01 · Apple iPhone Pro</div>
+          <div style="font-size:clamp(15px,1.5vw,21px); font-weight:700; color:var(--white);">Shot on iPhone</div>
+        </div>
+        <div style="padding: 1rem 1.4rem; display:flex; flex-direction:column; gap:0.7rem;">
+          <div style="display:flex; gap:0.8rem; align-items:flex-start;">
+            <div style="min-width:54px; font-size:clamp(9px,0.8vw,11px); letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); font-weight:600; padding-top:2px; flex-shrink:0;">核心</div>
+            <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-mid); line-height:1.5;">專業導演、攝影師、創作者</div>
+          </div>
+          <div style="display:flex; gap:0.8rem; align-items:flex-start;">
+            <div style="min-width:54px; font-size:clamp(9px,0.8vw,11px); letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.4); font-weight:600; padding-top:2px; flex-shrink:0;">延伸</div>
+            <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-mid); line-height:1.5;">內容創作者、YouTuber、學生</div>
+          </div>
+          <div style="display:flex; gap:0.8rem; align-items:flex-start;">
+            <div style="min-width:54px; font-size:clamp(9px,0.8vw,11px); letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.25); font-weight:600; padding-top:2px; flex-shrink:0;">外圍</div>
+            <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5;">在意拍照品質的一般消費者</div>
+          </div>
+          <div style="margin-top:0.4rem; padding-top:0.8rem; border-top:1px solid var(--gray-3); font-size:clamp(11px,1vw,14px); color:var(--text-dim); line-height:1.5; font-style:italic;">
+            「連專業創作者都用 iPhone 拍攝，我用它也是在使用被專業認可的工具。」
+          </div>
+        </div>
+      </div>
+
+      <!-- Case 2: The North Face -->
+      <div style="background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 4px; overflow: hidden;">
+        <div style="background: rgba(255,255,255,0.04); padding: 1rem 1.4rem; border-bottom: 1px solid var(--gray-3);">
+          <div style="font-size:clamp(10px,0.85vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); font-weight:600; margin-bottom:0.3rem;">Case 02 · The North Face</div>
+          <div style="font-size:clamp(15px,1.5vw,21px); font-weight:700; color:var(--white);">能力外溢效應</div>
+        </div>
+        <div style="padding: 1rem 1.4rem; display:flex; flex-direction:column; gap:0.7rem;">
+          <div style="display:flex; gap:0.8rem; align-items:flex-start;">
+            <div style="min-width:54px; font-size:clamp(9px,0.8vw,11px); letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); font-weight:600; padding-top:2px; flex-shrink:0;">核心</div>
+            <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-mid); line-height:1.5;">高山登山家、攀岩選手、探險家</div>
+          </div>
+          <div style="display:flex; gap:0.8rem; align-items:flex-start;">
+            <div style="min-width:54px; font-size:clamp(9px,0.8vw,11px); letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.4); font-weight:600; padding-top:2px; flex-shrink:0;">延伸</div>
+            <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-mid); line-height:1.5;">越野跑者、滑雪、戶外愛好者</div>
+          </div>
+          <div style="display:flex; gap:0.8rem; align-items:flex-start;">
+            <div style="min-width:54px; font-size:clamp(9px,0.8vw,11px); letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.25); font-weight:600; padding-top:2px; flex-shrink:0;">外圍</div>
+            <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5;">都市消費者 → Supreme、Gucci 聯名</div>
+          </div>
+          <div style="margin-top:0.4rem; padding-top:0.8rem; border-top:1px solid var(--gray-3); font-size:clamp(11px,1vw,14px); color:var(--text-dim); line-height:1.5; font-style:italic;">
+            「能應付喜馬拉雅山的裝備，日常通勤一定沒問題。」時尚形象建立在專業信任之後。
+          </div>
+        </div>
+      </div>
+
+      <!-- Case 3: Der ZÖMAR -->
+      <div style="background: var(--orange-dim); border: 1px solid var(--orange-mid); border-radius: 4px; overflow: hidden;">
+        <div style="background: rgba(255,102,0,0.1); padding: 1rem 1.4rem; border-bottom: 1px solid var(--orange-mid);">
+          <div style="font-size:clamp(10px,0.85vw,12px); letter-spacing:0.15em; text-transform:uppercase; color:var(--orange); font-weight:600; margin-bottom:0.3rem;">Case 03 · Der ZÖMAR</div>
+          <div style="font-size:clamp(15px,1.5vw,21px); font-weight:700; color:var(--white);">舞台專業 → 生活日常</div>
+        </div>
+        <div style="padding: 1rem 1.4rem; display:flex; flex-direction:column; gap:0.7rem;">
+          <div style="display:flex; gap:0.8rem; align-items:flex-start;">
+            <div style="min-width:54px; font-size:clamp(9px,0.8vw,11px); letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); font-weight:600; padding-top:2px; flex-shrink:0;">核心</div>
+            <div style="font-size:clamp(12px,1.1vw,16px); color:var(--white); line-height:1.5; font-weight:500;">舞台表演者——長時間帶妝的肌膚高負擔，需要最低刺激、高效修護的專業保養</div>
+          </div>
+          <div style="display:flex; gap:0.8rem; align-items:flex-start;">
+            <div style="min-width:54px; font-size:clamp(9px,0.8vw,11px); letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.6); font-weight:600; padding-top:2px; flex-shrink:0;">延伸</div>
+            <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-mid); line-height:1.5;">空服員、主播、婚禮工作者——職業帶妝需求與舞台高度相似</div>
+          </div>
+          <div style="display:flex; gap:0.8rem; align-items:flex-start;">
+            <div style="min-width:54px; font-size:clamp(9px,0.8vw,11px); letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.35); font-weight:600; padding-top:2px; flex-shrink:0;">外圍</div>
+            <div style="font-size:clamp(12px,1.1vw,16px); color:var(--text-dim); line-height:1.5;">在意自己形象、重視肌膚品質的一般消費者</div>
+          </div>
+          <div style="margin-top:0.4rem; padding-top:0.8rem; border-top:1px solid var(--orange-mid); font-size:clamp(11px,1vw,14px); color:var(--text-mid); line-height:1.5; font-style:italic;">
+            「連舞台上長時間帶妝的表演者都在用，我的日常肌膚需求一定能被照顧好。」
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Takeaway -->
+    <div style="margin-top: 1.8rem; font-size:clamp(14px,1.35vw,20px); color:var(--text-mid); border-left: 3px solid var(--orange); padding-left: 1.2rem; line-height:1.6;">
+      品牌不是先追求大眾，而是先贏得專業者的信任。<br>
+      <strong style="color:var(--white);">真正的擴散，是從核心往外圍滲透——而不是一開始就想討好所有人。</strong>
+    </div>
+  </div>
+
+  <!-- SLIDE 10 — Section Break：聯名 -->
+  <div class="slide slide-section" data-time="品牌聯名">
+    <div class="eyebrow">Brand Collaboration</div>
+    <h2>異業合作與<br><em>品牌聯名</em>的效益</h2>
+    <h3>聯名到底在賣什麼？</h3>
+    <div class="section-num">05</div>
+  </div>
+
+  <!-- SLIDE 11 — 互動：聯名在賣什麼？ -->
+  <div class="slide" data-time="Part 5 · 7 min">
+    <div class="eyebrow">互動討論</div>
+    <h2>品牌聯名，<br>最重要的是什麼？</h2>
+    <div class="choice-grid" id="collab-choices">
+      <button class="choice-btn" onclick="pickCollab(this, false)">A. 曝光</button>
+      <button class="choice-btn" onclick="pickCollab(this, false)">B. 流量</button>
+      <button class="choice-btn" onclick="pickCollab(this, false)">C. 話題</button>
+      <button class="choice-btn" onclick="pickCollab(this, true)">D. 信任</button>
+    </div>
+    <div class="reveal-text" id="collab-reveal">
+      聯名不是兩個品牌互相借 Logo，<br>
+      <strong>而是兩個品牌互相借信任。</strong>
+    </div>
+  </div>
+
+  <!-- SLIDE 12 — 聯名三大效益 -->
+  <div class="slide" data-time="Part 5 · 7 min">
+    <div class="eyebrow">Collab Benefits</div>
+    <h2>聯名的<em>三大效益</em></h2>
+    <div class="benefit-grid" id="benefit-cards">
+      <div class="benefit-card">
+        <div class="b-num">01</div>
+        <div class="b-title">信任轉移<br><span style="font-size:0.75em; color: var(--text-dim);">Trust Transfer</span></div>
+        <div class="b-body">A 品牌把自己累積的信任借給 B 品牌。對新品牌來說，聯名是加速建立信任最有效的方式。</div>
+      </div>
+      <div class="benefit-card" style="transition-delay:0.12s">
+        <div class="b-num">02</div>
+        <div class="b-title">客群交換<br><span style="font-size:0.75em; color: var(--text-dim);">Audience Exchange</span></div>
+        <div class="b-body">調性相近但客群不同的品牌，透過聯名互相打開新受眾。好的聯名是互補，不是重疊。</div>
+      </div>
+      <div class="benefit-card" style="transition-delay:0.24s">
+        <div class="b-num">03</div>
+        <div class="b-title">價值放大<br><span style="font-size:0.75em; color: var(--text-dim);">Value Amplification</span></div>
+        <div class="b-body">兩個品牌精神共鳴，聯名創造出新的敘事，讓市場覺得「這兩個站在一起是有道理的」。</div>
+      </div>
+    </div>
+    <div style="margin-top: 2rem; font-size:clamp(13px,1.2vw,17px); color:var(--text-dim); border-left: 3px solid var(--orange); padding-left: 1.2rem; line-height:1.7;">
+      以上三個效益，正是 Der ZÖMAR 與<strong style="color:var(--white);">金馬獎、洲際酒店、B. DANCE 舞團</strong>等品牌合作背後的共同邏輯——<br>
+      每一次聯名，都是一次信任的借用與放大。
+    </div>
+  </div>
+
+  <div class="slide slide-section" data-time="Part 5/6 transition">
+    <div class="eyebrow">一個延伸思考</div>
+    <h2>品牌故事，<br>是在講<em>誰</em>的故事？</h2>
+    <div class="section-num">Story</div>
+  </div>
+
+  <!-- SLIDE 14 — 三層故事 -->
+  <div class="slide" data-time="">
+    <div class="eyebrow">Brand Storytelling</div>
+    <h2>品牌故事的<em>三個層次</em></h2>
+    <div class="story-layers" id="story-cards">
+      <div class="story-card">
+        <div class="s-layer">第一層</div>
+        <div class="s-title">企業故事</div>
+        <div class="s-body">我們是誰、為什麼創立、我們相信什麼。<br>建立品牌的<strong>起點</strong>。</div>
+      </div>
+      <div class="story-card" style="transition-delay:0.1s">
+        <div class="s-layer">第二層</div>
+        <div class="s-title">產品故事</div>
+        <div class="s-body">我們如何設計、研發、創造品質與體驗。<br>建立品牌的<strong>可信度</strong>。</div>
+      </div>
+      <div class="story-card" style="transition-delay:0.2s">
+        <div class="s-layer">第三層</div>
+        <div class="s-title" style="color: var(--orange);">顧客故事</div>
+        <div class="s-body">顧客因我們產生什麼經驗。品牌出現在顧客哪個重要時刻。<br>建立品牌的<strong>生命力</strong>。<br><br>
+        <span style="font-style:italic; color:var(--text-dim); font-size:0.9em;">「一瓶香水本身不是故事。但當它成為某個人第一次登台前的儀式，它就有了故事。」</span></div>
+      </div>
+    </div>
+    <div class="quote" style="margin-top: 2rem;">
+      好的品牌，不只是會說自己的故事，<br>
+      <strong>而是能讓顧客說出自己的故事。</strong>
+    </div>
+  </div>
+
+  <!-- SLIDE 15 — Section Break：趨勢工具 -->
+  <div class="slide slide-section" data-time="品牌趨勢">
+    <div class="eyebrow">Brand Trends</div>
+    <h2>現在經營品牌，<br>有哪些<em>趨勢與工具</em>？</h2>
+    <h3>三個觀察，歡迎大家分享看法</h3>
+    <div class="section-num">06</div>
+  </div>
+
+  <!-- SLIDE 16 — 趨勢三點 -->
+  <div class="slide" data-time="Part 6 · 5 min">
+    <div class="eyebrow">Brand Trends</div>
+    <h2>三個<em>觀察</em></h2>
+    <div class="trend-list">
+      <div class="trend-item">
+        <div class="trend-num">AI</div>
+        <div class="trend-content">
+          <div class="t-title">AI 降低了品牌門檻，但提高了差異化的難度</div>
+          <div class="t-body">當所有人都能用 AI 生成文案與設計，品牌的核心差異化來自哪裡？<strong>你有沒有自己真實的觀點與審美。</strong></div>
+        </div>
+      </div>
+      <div class="trend-item">
+        <div class="trend-num">社群</div>
+        <div class="trend-content">
+          <div class="t-title">社群讓距離變近，但信任變得更難建立</div>
+          <div class="t-body">所有人都能發聲，但顧客的注意力和信任是有限的。<strong>一致性比聲量更重要。</strong></div>
+        </div>
+      </div>
+      <div class="trend-item">
+        <div class="trend-num">體驗</div>
+        <div class="trend-content">
+          <div class="t-title">消費者體驗才是品牌最強的分水嶺</div>
+          <div class="t-body">廣告吸引人，但<strong>體驗才留人</strong>。顧客第一次接觸品牌時的感受，決定了他會不會成為核心客群。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 17 — Brand Equity 堆疊 -->
+  <div class="slide" data-time="Part 6 · end">
+    <div class="eyebrow">Brand Equity Model</div>
+    <h2>品牌資產如何<em>一層一層堆疊</em>？</h2>
+    <div class="stack" id="equity-stack">
+      <div class="stack-item" data-delay="0">
+        <div class="stack-num">01</div>
+        <div class="stack-name">被知道</div>
+        <div class="stack-sub">Awareness — 有流量不代表有品牌</div>
+      </div>
+      <div class="stack-item" data-delay="80">
+        <div class="stack-num">02</div>
+        <div class="stack-name">被信任</div>
+        <div class="stack-sub">Trust — 一致性帶來信任，信任降低選擇成本</div>
+      </div>
+      <div class="stack-item" data-delay="160">
+        <div class="stack-num">03</div>
+        <div class="stack-name">被體驗</div>
+        <div class="stack-sub">Experience — 所有接觸點的總和</div>
+      </div>
+      <div class="stack-item" data-delay="240">
+        <div class="stack-num">04</div>
+        <div class="stack-name">被記住</div>
+        <div class="stack-sub">Story — 故事讓資訊變成記憶</div>
+      </div>
+      <div class="stack-item" data-delay="320">
+        <div class="stack-num">05</div>
+        <div class="stack-name">被推薦</div>
+        <div class="stack-sub">Advocacy — 品牌複利真正開始的地方</div>
+      </div>
+      <div class="stack-item" data-delay="400">
+        <div class="stack-num">06</div>
+        <div class="stack-name" style="color: var(--orange);">被認同</div>
+        <div class="stack-sub">Culture — 不只是商品選擇，而是身份認同</div>
+      </div>
+    </div>
+    <div style="margin-top: 2rem; font-size:clamp(13px,1.25vw,18px); color:var(--text-dim); border-left: 3px solid var(--orange); padding-left: 1.2rem; line-height:1.7;">
+      品牌不是一次建立的，<br>
+      <strong style="color:var(--white);">而是在每一個接觸點裡，一層一層被積累出來的。</strong>
+    </div>
+  </div>
+
+  <div class="slide" data-time="Closing · 4 min">
+    <div class="eyebrow">Closing</div>
+    <h2>品牌 0→1，<br>從這些<em>問題</em>開始</h2>
+    <div class="closing-list">
+      <div class="closing-q">我們希望被誰記住？</div>
+      <div class="closing-q">我們希望因為什麼被記住？</div>
+      <div class="closing-q">我們願意做出哪些選擇？</div>
+      <div class="closing-q">又願意放棄哪些選擇？</div>
+      <div class="closing-q">我們願意進入顧客哪一段體驗？</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 19 — Final Quote -->
+  <div class="slide" data-time="">
+    <div class="eyebrow">Brand 0→1</div>
+    <h1 style="font-size: clamp(42px, 5.5vw, 82px); line-height: 1.15;">
+      品牌不是<em>設計</em>，<br>而是一連串的<em>體驗</em>。
+    </h1>
+    <div class="cover-meta" style="bottom: 7vh;">
+      The Gluck Lab International · Der ZÖMAR · ZtyleNow · ZtylePro
+    </div>
+  </div>
+
+  <!-- SLIDE 20 — Q&A -->
+  <div class="slide slide-cover" data-time="">
+    <h1 style="font-size: clamp(60px, 9vw, 130px);">Q <em>&</em> A</h1>
+    <div class="cover-subtitle">謝謝各位前輩，期待交流</div>
+    <div class="cover-meta">
+      <strong>Felix Chen</strong> · The Gluck Lab International
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<!-- Navigation -->
+<div id="nav">
+  <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)">‹</button>
+  <div id="progress">1 / 22</div>
+  <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">›</button>
+</div>
+
+<!-- Time badge (top right) -->
+<div class="time-badge"><span id="time-label"></span></div>
+
+<div id="hint">按 ← → 或點擊兩側換頁　Space 下一頁</div>
+
+<script>
+  // ── State ──
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const progressBar = document.getElementById('progress-bar');
+  const progressText = document.getElementById('progress');
+  const timeLabel = document.getElementById('time-label');
+  const hint = document.getElementById('hint');
+  let hintTimer;
+
+  // ── Show slide ──
+  function showSlide(index, dir = 1) {
+    slides[current].classList.remove('active');
+    current = (index + total) % total;
+    slides[current].classList.add('active');
+
+    // Progress bar
+    progressBar.style.width = ((current + 1) / total * 100) + '%';
+    progressText.textContent = (current + 1) + ' / ' + total;
+
+    // Time badge
+    const t = slides[current].dataset.time;
+    timeLabel.textContent = t || '';
+
+    // Trigger stack / cards animations for specific slides
+    triggerSlideAnimations(current);
+
+    // Hide hint after first navigation
+    clearTimeout(hintTimer);
+    hint.classList.add('hidden');
+  }
+
+  function changeSlide(dir) { showSlide(current + dir, dir); }
+
+  // ── Keyboard ──
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); changeSlide(-1); }
+  });
+
+  // ── Click zones (left 40% = prev, right 40% = next, center interactive) ──
+  document.getElementById('slides').addEventListener('click', e => {
+    const x = e.clientX / window.innerWidth;
+    if (e.target.classList.contains('choice-btn') || e.target.classList.contains('nav-btn')) return;
+    if (x < 0.25) changeSlide(-1);
+    else if (x > 0.75) changeSlide(1);
+  });
+
+  // ── Cursor ──
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+  });
+
+  // ── Hint auto-hide ──
+  hintTimer = setTimeout(() => hint.classList.add('hidden'), 5000);
+
+  // ── Brand asset tags: highlight one by one on hover ──
+  const assetTags = document.querySelectorAll('#brand-asset-tags .tag');
+  assetTags.forEach((tag, i) => {
+    tag.addEventListener('mouseenter', () => tag.classList.add('highlighted'));
+    tag.addEventListener('mouseleave', () => tag.classList.remove('highlighted'));
+  });
+
+  // ── Interactive choices ──
+  function pickBrand(btn, isAnswer) {
+    document.querySelectorAll('#brand-choices .choice-btn').forEach(b => b.classList.remove('selected', 'answer-reveal'));
+    btn.classList.add(isAnswer ? 'answer-reveal' : 'selected');
+    document.getElementById('brand-reveal').classList.add('visible');
+  }
+
+  function pickCoffee(btn, text) {
+    document.querySelectorAll('#coffee-choices .choice-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    const r = document.getElementById('coffee-reveal');
+    r.innerHTML = text;
+    r.classList.add('visible');
+  }
+
+  function pickCollab(btn, isAnswer) {
+    document.querySelectorAll('#collab-choices .choice-btn').forEach(b => b.classList.remove('selected', 'answer-reveal'));
+    btn.classList.add(isAnswer ? 'answer-reveal' : 'selected');
+    document.getElementById('collab-reveal').classList.add('visible');
+  }
+
+  // ── Trigger per-slide animations ──
+  function triggerSlideAnimations(idx) {
+    const slide = slides[idx];
+
+    // Benefit cards (slide 12)
+    const cards = slide.querySelectorAll('.benefit-card');
+    cards.forEach((c, i) => {
+      setTimeout(() => c.classList.add('visible'), 100 + i * 120);
+    });
+
+    // Story cards
+    const scards = slide.querySelectorAll('.story-card');
+    scards.forEach((c, i) => {
+      setTimeout(() => c.classList.add('visible'), 100 + i * 100);
+    });
+
+    // Equity stack
+    const stackItems = slide.querySelectorAll('.stack-item');
+    stackItems.forEach((item, i) => {
+      const delay = parseInt(item.dataset.delay || 0);
+      setTimeout(() => item.classList.add('visible'), 150 + delay);
+    });
+  }
+
+  // ── Touch swipe ──
+  let touchX = 0;
+  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) changeSlide(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
+  // Init
+  progressBar.style.width = (1 / total * 100) + '%';
+  triggerSlideAnimations(0);
+</script>
+</body>
+</html>
